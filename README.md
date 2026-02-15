@@ -87,7 +87,7 @@ Your website will be live in a few minutes.
 
 ## 👤 Author
 
-Ganesh V R S  
+V Raghava Surya Ganesh
 GitHub: https://github.com/vrsganesh
 
 ---
@@ -95,3 +95,4 @@ GitHub: https://github.com/vrsganesh
 ## 📄 License
 
 This project is for educational purposes only.
+
