@@ -1,0 +1,201 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body */
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    background-color: #1e1e2f;
+    color: white;
+    position: relative;
+}
+
+/* Logo */
+.logo h2 {
+    font-size: 22px;
+}
+
+/* Navigation */
+.nav {
+    display: flex;
+    gap: 25px;
+}
+
+.nav a {
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+.nav a:hover {
+    color: #ff9800;
+}
+
+/* Right Section */
+.right-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Search Bar */
+.search-bar input {
+    padding: 7px 15px;
+    border-radius: 20px;
+    border: none;
+    outline: none;
+    width: 180px;
+}
+
+/* Cart */
+.cart {
+    position: relative;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* Cart Badge */
+.cart-count {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: red;
+    color: white;
+    font-size: 12px;
+    padding: 3px 7px;
+    border-radius: 50%;
+}
+
+/* Hamburger */
+.hamburger {
+    display: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 768px) {
+
+    .nav {
+        position: absolute;
+        top: 70px;
+        right: 20px;
+        background-color: #1e1e2f;
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+        border-radius: 8px;
+        display: none;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .nav.active {
+        display: flex;
+    }
+
+    .search-bar {
+        display: none;
+    }
+
+    .hamburger {
+        display: block;
+    }
+}
+
+/* Smooth Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* ================= HERO SECTION ================= */
+
+.hero {
+    height: 90vh;
+    background: linear-gradient(to right, #1e1e2f, #3a3a6a);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    padding: 20px;
+}
+
+.hero-content {
+    animation: fadeUp 1s ease-in-out;
+}
+
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.hero p {
+    font-size: 20px;
+    margin-bottom: 30px;
+}
+
+.hero-btn {
+    display: inline-block;
+    padding: 12px 30px;
+    background-color: #ff9800;
+    color: white;
+    text-decoration: none;
+    border-radius: 25px;
+    font-size: 16px;
+    transition: 0.3s ease;
+}
+
+.hero-btn:hover {
+    background-color: #e68900;
+    transform: scale(1.05);
+}
+
+/* Fade Animation */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 768px) {
+
+    .hero h1 {
+        font-size: 32px;
+    }
+
+    .hero p {
+        font-size: 16px;
+    }
+
+    .hero-btn {
+        padding: 14px 35px;
+        font-size: 18px;
+    }
+}

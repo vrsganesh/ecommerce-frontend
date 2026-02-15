@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Optimized Product Page</title>
+
+<!-- Optimized CSS (Minified) -->
+<style>
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f4f4}
+.container{max-width:1200px;margin:auto;padding:20px}
+.product{background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+img{width:100%;height:auto;border-radius:6px}
+button{padding:10px 15px;background:#007bff;color:#fff;border:none;border-radius:5px;cursor:pointer}
+button:hover{background:#0056b3}
+@media(max-width:768px){.container{padding:10px}}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+  <div class="product">
+    
+    <h2>Mens Casual Slim Fit</h2>
+
+    <!-- ✅ Responsive + WebP + Lazy Loading -->
+    <img 
+      src="images/product-small.webp"
+      srcset="
+        images/product-small.webp 480w,
+        images/product-medium.webp 800w,
+        images/product-large.webp 1200w
+      "
+      sizes="(max-width: 600px) 480px,
+             (max-width: 1000px) 800px,
+             1200px"
+      alt="Mens Casual Slim Fit"
+      loading="lazy"
+    >
+
+    <p>$22.30</p>
+
+    <button onclick="addToCart()">Add to Cart</button>
+
+    <!-- ✅ SVG Icon Example -->
+    <p>
+      Fast Delivery 
+      <svg width="16" height="16" fill="green" viewBox="0 0 16 16">
+        <path d="M16 2H0v2h16V2zm0 4H0v2h16V6zm0 4H0v2h16v-2z"/>
+      </svg>
+    </p>
+
+  </div>
+</div>
+
+<!-- Minified JavaScript -->
+<script>
+function addToCart(){
+let cart=JSON.parse(localStorage.getItem("cart"))||[];
+let product={id:1,title:"Mens Casual Slim Fit",price:22.30,quantity:1};
+let existing=cart.find(i=>i.id===product.id);
+if(existing){existing.quantity+=1}else{cart.push(product)}
+localStorage.setItem("cart",JSON.stringify(cart));
+alert("Added to Cart");
+}
+</script>
+
+</body>
+</html>

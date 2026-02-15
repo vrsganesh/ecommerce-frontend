@@ -1,26 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Commerce Frontend</title>
-    <link rel="stylesheet" href="styles/main.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopEasy - Cart Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:Arial,sans-serif;background:#f5f5f5;}
+header{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+header .logo h2{color:#007bff;}
+nav a{margin:0 10px;text-decoration:none;color:#333;font-weight:bold;}
+nav a:hover{color:#007bff;}
+.cart{cursor:pointer;font-weight:bold;position:relative;}
+.cart-count{position:absolute;top:-8px;right:-10px;background:red;color:#fff;font-size:0.8rem;padding:2px 6px;border-radius:50%;}
+.hero{background:#007bff;color:#fff;padding:60px 20px;text-align:center;}
+.hero h1{font-size:2rem;margin-bottom:10px;}
+.hero p{margin-bottom:20px;font-size:1.1rem;}
+.hero a{padding:10px 20px;background:#fff;color:#007bff;border-radius:5px;text-decoration:none;font-weight:bold;}
+.product-grid{display:grid;gap:20px;grid-template-columns:repeat(4,1fr);padding:20px;}
+.product-card{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 5px rgba(0,0,0,0.1);display:flex;flex-direction:column;transition:0.2s;}
+.product-card:hover{transform:translateY(-5px);box-shadow:0 8px 20px rgba(0,0,0,0.2);}
+.product-card img{width:100%;height:200px;object-fit:contain;background:#f0f0f0;}
+.product-info{padding:15px;flex-grow:1;display:flex;flex-direction:column;justify-content:space-between;}
+.product-info h3{font-size:1rem;margin-bottom:10px;}
+.product-info p{font-size:0.95rem;margin-bottom:10px;}
+.product-info button{padding:10px;border:none;background:#007bff;color:#fff;border-radius:5px;cursor:pointer;transition:0.2s;}
+.product-info button:hover{background:#0056b3;}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#007bff;color:#fff;padding:10px 20px;border-radius:5px;display:none;z-index:100;}
+#cartModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:200;}
+#cartContent{background:#fff;width:90%;max-width:500px;padding:20px;border-radius:10px;max-height:80%;overflow-y:auto;position:relative;}
+#cartContent h2{text-align:center;margin-bottom:20px;}
+.closeCart{position:absolute;top:10px;right:15px;font-size:1.2rem;cursor:pointer;color:#007bff;}
+.cart-item{display:flex;justify-content:space-between;margin-bottom:10px;border-bottom:1px solid #eee;padding-bottom:5px;}
+.cart-item img{width:50px;height:50px;object-fit:contain;margin-right:10px;}
+.cart-item div{flex-grow:1;}
+.cart-item p{margin-bottom:5px;font-size:0.9rem;}
+@media(max-width:1024px){.product-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:768px){.product-grid{grid-template-columns:repeat(2,1fr);}.product-card img{height:150px;}}
+@media(max-width:480px){.product-grid{grid-template-columns:repeat(1,1fr);}.product-card img{height:120px;}}
+</style>
 </head>
 <body>
-    <header>
-        <h1>Welcome to Our Online Store</h1>
-    </header>
-    <script src="scripts/app.js"></script>
+
+<header>
+  <div class="logo"><h2>ShopEasy</h2></div>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Products</a>
+    <a href="#">About</a>
+    <a href="#">Contact</a>
+  </nav>
+  <div class="cart" id="cartBtn">🛒 <span class="cart-count" id="cartCount">0</span></div>
+</header>
+
+<section class="hero">
+  <h1>Biggest Sale of the Year!</h1>
+  <p>Discover amazing deals on top products. Limited time offer.</p>
+  <a href="#productGrid">Shop Now</a>
+</section>
+
+<h1 style="text-align:center;margin-top:30px;">Dynamic Product Grid</h1>
+<div id="loading">Loading products...</div>
+<div id="error"></div>
+<div class="product-grid" id="productGrid"></div>
+
+<div id="toast"></div>
+
+<!-- Cart Modal -->
+<div id="cartModal">
+  <div id="cartContent">
+    <span class="closeCart" id="closeCart">&times;</span>
+    <h2>Your Cart</h2>
+    <div id="cartItems">Cart is empty.</div>
+  </div>
+</div>
+
+<script>
+let productsCache = [];
+const productGrid = document.getElementById("productGrid");
+const loading = document.getElementById("loading");
+const error = document.getElementById("error");
+const cartCountSpan = document.getElementById("cartCount");
+const toast = document.getElementById("toast");
+const cartModal = document.getElementById("cartModal");
+const cartItemsDiv = document.getElementById("cartItems");
+const cartBtn = document.getElementById("cartBtn");
+const closeCart = document.getElementById("closeCart");
+
+// Toast
+function showToast(msg){
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  setTimeout(()=>{toast.style.display='none';},1500);
+}
+
+// Update cart count
+function updateCartCount(){
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+  const total = cart.reduce((sum,item)=>sum+(item.quantity||1),0);
+  cartCountSpan.textContent = total;
+}
+
+// Add to cart
+function addToCart(id){
+  const product = productsCache.find(p=>p.id===id);
+  if(!product) return;
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+  const existing = cart.find(p=>p.id===id);
+  if(existing){ existing.quantity = (existing.quantity||1)+1; }
+  else{ cart.push({...product, quantity:1}); }
+  localStorage.setItem("cart",JSON.stringify(cart));
+  updateCartCount();
+  showToast(`${product.title} added to cart!`);
+}
+
+// Show cart modal
+function showCart(){
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+  if(cart.length===0){ cartItemsDiv.innerHTML="Cart is empty."; }
+  else{
+    cartItemsDiv.innerHTML = "";
+    cart.forEach(item=>{
+      const div = document.createElement("div");
+      div.className="cart-item";
+      div.innerHTML=`
+        <img src="${item.image}" alt="${item.title}">
+        <div>
+          <p>${item.title}</p>
+          <p>Qty: ${item.quantity} | $${(item.price*item.quantity).toFixed(2)}</p>
+        </div>
+      `;
+      cartItemsDiv.appendChild(div);
+    });
+  }
+  cartModal.style.display='flex';
+}
+
+// Close cart modal
+closeCart.onclick = ()=>{cartModal.style.display='none';}
+window.onclick = e=>{if(e.target==cartModal) cartModal.style.display='none';}
+
+// Fetch products
+async function fetchProducts(){
+  try{
+    const res = await fetch("https://fakestoreapi.com/products");
+    if(!res.ok) throw new Error("Failed to load products");
+    const products = await res.json();
+    productsCache = products;
+    loading.style.display="none";
+    products.forEach(product=>{
+      const card = document.createElement("div");
+      card.classList.add("product-card");
+      card.innerHTML=`
+        <img src="${product.image}" alt="${product.title}" loading="lazy">
+        <div class="product-info">
+          <h3>${product.title}</h3>
+          <p>$${product.price}</p>
+          <button onclick="addToCart(${product.id})">Add to Cart</button>
+        </div>
+      `;
+      productGrid.appendChild(card);
+    });
+    updateCartCount();
+  }catch(err){
+    console.error(err);
+    loading.style.display="none";
+    error.textContent="Failed to load products. Please try again later.";
+  }
+}
+
+// Cart click
+cartBtn.onclick = showCart;
+
+fetchProducts();
+</script>
+
 </body>
 </html>
-🔹 Open styles/main.css and add basic styles:
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopEasy Home</title>
+</head>
+<body style="text-align:center;padding:50px;font-family:Arial;">
 
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-}
-🔹 Open scripts/app.js and add:
+<h1>Welcome to ShopEasy</h1>
+<p id="userEmail"></p>
+<button onclick="logout()" style="padding:10px 20px;background:red;color:white;border:none;">Logout</button>
 
-console.log("E-Commerce Website Loaded");
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { 
+  getAuth, 
+  onAuthStateChanged, 
+  signOut 
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCOOaqbwS1uoDl7DcTxxBiIf2bpoe0mpKU",
+  authDomain: "shopeasy-76a27.firebaseapp.com",
+  projectId: "shopeasy-76a27",
+  storageBucket: "shopeasy-76a27.firebasestorage.app",
+  messagingSenderId: "189271055442",
+  appId: "1:189271055442:web:c8d3a8d41914e1f24cd38b",
+  measurementId: "G-79NWYF05D5"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth,(user)=>{
+  if(user){
+    document.getElementById("userEmail").innerText="Logged in as: "+user.email;
+  } else {
+    window.location.href="login.html";
+  }
+});
+
+window.logout = function(){
+  signOut(auth).then(()=>{
+    window.location.href="login.html";
+  });
+};
+
+</script>
+
+</body>
+</html>
